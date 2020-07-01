@@ -1,7 +1,7 @@
 const TelegramBot = require('node-telegram-bot-api');
 const config = require('./config');
-var express = require("express");
-var app = express();
+const express = require("express");
+const app = express();
 
 const pg = require("pg")
 const client = new pg.Client(config.DB_URL);
@@ -29,13 +29,7 @@ bot.onText(/\/start/, (msg) => {
   bot.sendMessage(chatId, `Привет, ${msg.from.first_name}.Чем я могу тебе помочь?`, startKeyboard);
 });
 
-// function uslugi(){
-//   client.query('Select name_uslugi from uslugi', (err,res)=>{
-//     //console.log(err, res)
 
-    
-//   })
-// }
 
 
 let masterKeyboard={
@@ -55,6 +49,8 @@ bot.onText(/Записаться на услугу/,(msg)=>{
   bot.sendMessage(chatId, `Давай выберем услугу `, masterKeyboard );
   
 })
+
+
 
 bot.onText(/Игорь Иванов/i,(msg)=>{
   const chatId = msg.chat.id;
