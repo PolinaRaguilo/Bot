@@ -55,10 +55,9 @@ let DaNetKeyboard={
   })
 }
 
-let NextKeyboard={
+let BackToChooseMasterKeyboard={
   reply_markup:JSON.stringify({
     keyboard: [
-      ['Далее'],
       ['Вернуться к выбору мастера']
     ],
     resize_keyboard:true,
@@ -169,17 +168,36 @@ bot.onText(/Стрижка \+ бритье/i,(msg)=>{
 
 
 bot.on('message', msg =>{
+    
   if (msg.text == 'Игорь Иванов' || msg.text == 'Егор Козлов' || msg.text=='Сергей Короткий' || msg.text =='Екатерина Антипенко' ){
     const chatId = msg.chat.id;
-    bot.sendMessage(chatId, `Укажите своё ФИО: `,NextKeyboard);
-    
-  }else if(msg.text=='Далее'){
-    
-    // client.query('INSERT INTO ', (err,res)=>{
-    //   console.log(err, res)
-    // })
-  }
-})
+    let master = msg.text;
+    bot.sendMessage(chatId, `Укажите своё ФИО в формате: 
+  /fio Фамилия Имя и отправьте`,BackToChooseMasterKeyboard);
+    bot.onText(/\/fio/,(msg,match)=>{
+      const chatId = msg.chat.id;
+      let input = msg.text.split(" ");
+      console.log(input);
+      let familiya = input[1];
+      let imya = input[2];
+      console.log(familiya, imya,master);
+      bot.sendMessage(chatId, `Укажите свой номер телефона,оператор и почту: 
+      /contact номер оператор почта`,BackToChooseMasterKeyboard);
+    bot.onText(/\/contact/,(msg,match)=>{
+      const chatId = msg.chat.id;
+      let contact = msg.text.split(" ");
+      console.log(input);
+      let nomer = contact[1];
+      let operator = contact[2];
+      let email = contact[3];
+      client.query(`INSERT INTO clients (email,imya,familiya,mobile_operator,mobile)  VALUES ($1,$2,$3,$4,$5)`,[email,imya,familiya,operator,nomer],(err,res)=>{
+        console.log(err,res);
+        bot.sendMessage(chatId,'Отлично, теперь давай выберем дату и время.Когда тебе удобно?');
+      })
+  })
+})}});
+
+
 
 
 
