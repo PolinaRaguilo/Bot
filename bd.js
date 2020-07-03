@@ -1,5 +1,5 @@
 const pg = require("pg")
-const connectionString = "pg://postgres:Root.2020@localhost:5432/BarberShop";
+const connectionString = "YOUR URL";
 const client = new pg.Client(connectionString);
 client.connect();
 
