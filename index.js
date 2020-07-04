@@ -19,7 +19,6 @@ const startKeyboard = {
     keyboard: [
       ["Записаться на услугу", "Отменить запись"],
       ["Изменить дату и время записи"],
-      ["Изменить услугу"],
       ["Выход"],
     ],
   },
@@ -33,6 +32,7 @@ const uslugiKeyboard = {
       ["Отец + сын", "Друг + друг", "Стрижка + бритье"],
       ["Главное меню"],
     ],
+    resize_keyboard: true,
   },
 };
 
@@ -284,14 +284,78 @@ bot.on("message", (msg) => {
                 chatId,
                 `Упс..., что-то пошло не так. Попробуй ещё раз`
               );
-            }
-              
-              
+            }  
             }
           );
 
         });
       });
     });
+  } else if(msg.text === "Отменить запись"){
+    const chatId = msg.chat.id;
+    bot.sendMessage(
+      chatId,
+      `Укажи свою фамилию,имя,дату и время,когда ты был записан в формате: 
+      /delete фамилия имя дата время
+      Примечание: 
+      - дату указать в формате ГГГГ-ММ-ЧЧ
+      - время указать в формате ЧЧ:ММ`,
+      GlavnoeMenuKeyboard
+    );
+    bot.onText(/\/delete/i,(msg,match)=>{
+      let informationForDelete = msg.text.split(" ");
+      let familiyaDelete = informationForDelete[1];
+      let imyaDelete = informationForDelete[2];
+      let dataDelete = informationForDelete[3];
+      let timeDelete = informationForDelete[4];
+      client.query(
+        `DELETE FROM zapis WHERE data=$1 and vremya=$2`,
+        [dataDelete,timeDelete],
+        (err, res) => {
+          console.log("Запись удалена", err);
+        }
+      );
+      client.query(
+        `DELETE FROM clients WHERE imya=$1 and familiya=$2`,
+        [imyaDelete,familiyaDelete],
+        (err, res) => {
+          console.log("Клиент удалён", err);
+          bot.sendMessage(chatId,`Очень жаль... Мы ждём тебя в другой раз!`,GlavnoeMenuKeyboard);
+        }
+      );
+
+    })
+  }else if(msg.text=="Изменить дату и время записи"){
+    const chatId = msg.chat.id;
+    bot.sendMessage(chatId,`Укажи свою фамилию,имя, а также старую дату и время в формате:
+    /oldData фамилия имя стараяДата староеВремя
+    Примечание: 
+      - дату указать в формате ГГГГ-ММ-ЧЧ
+      - время указать в формате ЧЧ:ММ`,GlavnoeMenuKeyboard);
+    bot.onText(/\/oldData/,(msg,match)=>{
+      let oldDataTime = msg.text.split(" ");
+      let familiyaForChange = oldDataTime[1];
+      let nameForChange = oldDataTime[2];
+      let oldData = oldDataTime[3];
+      let oldTime = oldDataTime[4];
+      bot.sendMessage(chatId,`Теперь укажи новую дату и время в формате:
+      /changeDate дата время
+      Примечание: 
+      - дату указать в формате ГГГГ-ММ-ЧЧ
+      - время указать в формате ЧЧ:ММ`,GlavnoeMenuKeyboard);
+      bot.onText(/\/changeDate/,(msg,match)=>{
+        let newDataTime = msg.text.split(" ");
+        let newData = newDataTime[1];
+        let newTime = newDataTime[2];
+        client.query(
+          `UPDATE zapis SET data=$1, vremya=$2 WHERE id_clients=(SELECT id FROM clients where imya=$3 and familiya=$4) and data=$5 and vremya=$6`,
+          [newData,newTime,nameForChange,familiyaForChange,oldData,oldTime],
+          (err, res) => {
+            console.log("Запись изменена", err);
+            bot.sendMessage(chatId,`Твоё время изменено! Ждём тебя!`,GlavnoeMenuKeyboard);
+          }
+        );
+      })
+    })
   }
 });
